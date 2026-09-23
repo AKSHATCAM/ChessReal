@@ -1,35 +1,32 @@
 #include <iostream>
-#include "../lib/main.h"
 #include <cstdint>
-
-
-using namespace std;
-
-
+#include "../lib/main.h"
+#include "../lib/bitboard_utilities.h"
 
 int main() {
     Position pos;
 
-    // Place a few pieces by hand
-    pos.main_bitboard[Position::White][Position::Rook]   |= 1ULL << 0;   // a1
-    pos.main_bitboard[Position::White][Position::Knight] |= 1ULL << 6;   // g1
-    pos.main_bitboard[Position::Black][Position::King]   |= 1ULL << 60;  // e8
+    pos.main_bitboard[Position::White][Position::Rook] |= 1ULL << a1;
+    pos.main_bitboard[Position::White][Position::Knight] |= 1ULL << g1;
+    pos.main_bitboard[Position::Black][Position::King] |= 1ULL << e8;
 
-    // Round 1: derive and print
     pos.derived_bitboard();
-    std::cout << "White occupancy:";
+
+    std::cout << "White occupancy:\n";
     printBitboard(pos.occupancyarray[Position::White]);
-    std::cout << "Black occupancy:";
+
+    std::cout << "Black occupancy:\n";
     printBitboard(pos.occupancyarray[Position::Black]);
-    std::cout << "All occupied:";
+
+    std::cout << "All occupied:\n";
     printBitboard(pos.all_occupied_squares);
 
-    // Round 2: clear, re-derive, print again
     pos.clear();
     pos.derived_bitboard();
-    std::cout << "After clear - all occupied:";
+
+    std::cout << "After clear - all occupied:\n";
     printBitboard(pos.all_occupied_squares);
-    std::cout << "After clear - white rook board:";
-    printBitboard(pos.main_bitboard[Position::White][Position::Rook]);
+
+    return 0;
 }
 

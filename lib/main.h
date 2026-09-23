@@ -2,37 +2,6 @@
 #include <iostream>
 #include <cstdint>
 
-
-inline void printBitboard(uint64_t bitboard)
-{
-    std::cout << "\n\n";
-    for(int i = 0; i < 8; ++i)
-    {
-        std::cout << 8 - i << "    " ; 
-        for(int j = 0; j < 8; j++)
-        {
-            uint64_t bit = 1ULL << ((7 - i)*8 + j);
-            bool temp =  bit & bitboard;
-            std::cout << temp << " " ; 
-        }
-
-        std::cout << "\n";
-    }
-
-    std::cout << "\n     ";
-
-    for(char i = 'a'; i <= 'h' ; ++i)
-        std::cout << i << " " ; 
-    
-    std::cout << "\n\n\n";
-}
-
-
-
-
-
-
-
 class Position{
     public:
 
