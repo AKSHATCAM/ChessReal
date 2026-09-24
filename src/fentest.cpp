@@ -1,7 +1,7 @@
 #include <string>
 #include <sstream>
 #include <cctype>
-#include "../lib/main.h"
+#include "../lib/position.h"
 #include "../lib/bitboard_utilities.h"
 
 

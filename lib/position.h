@@ -10,9 +10,7 @@ class Position{
 
     enum PieceType {Pawn, Knight, Bishop, Rook, Queen, King, PieceCount};
 
-    enum Colour {White, Black, ColourCount};
-
-    uint64_t main_bitboard[Colour::ColourCount][PieceType::PieceCount]{};
+    uint64_t main_bitboard[ColourCount][PieceType::PieceCount]{};
 
     Colour side_to_move = White;
 
@@ -83,7 +81,7 @@ class Position{
 inline void printBoard(const Position& pos)
 {
     // Row 0 is White (uppercase), row 1 is Black (lowercase), matching the Colour enum
-    const char mapping[Position::ColourCount][Position::PieceCount] = {
+    const char mapping[ColourCount][Position::PieceCount] = {
         {'P', 'N', 'B', 'R', 'Q', 'K'},
         {'p', 'n', 'b', 'r', 'q', 'k'}
     };
@@ -115,7 +113,7 @@ inline void printBoard(const Position& pos)
 
     // ---- Side to move ----
     std::cout << "Side to move: "
-              << (pos.side_to_move == Position::White ? "White" : "Black") << "\n";
+              << (pos.side_to_move == White ? "White" : "Black") << "\n";
 
     // ---- Castling rights, in FEN order (KQkq), or "-" if none ----
     std::string castling;
@@ -196,8 +194,8 @@ inline bool fen_parser(Position& pos, const std::string& fen)
         Position::PieceType current_piece = static_cast<Position::PieceType>(index);
 
         // Uppercase is white, lowercase is black
-        Position::Colour current_colour =
-            std::isupper(static_cast<unsigned char>(ch)) ? Position::White : Position::Black;
+        Colour current_colour =
+            std::isupper(static_cast<unsigned char>(ch)) ? White : Black;
 
         // count runs a8, b8, ... h8, a7, ... but the bits start at a1,
         // so convert count into a rank and file first
@@ -218,8 +216,8 @@ inline bool fen_parser(Position& pos, const std::string& fen)
         return false;
 
     // ---- Field 2: side to move ----
-    if (side == "w")      pos.side_to_move = Position::White;
-    else if (side == "b") pos.side_to_move = Position::Black;
+    if (side == "w")      pos.side_to_move = White;
+    else if (side == "b") pos.side_to_move = Black;
     else return false;
 
     // ---- Field 3: castling rights ----

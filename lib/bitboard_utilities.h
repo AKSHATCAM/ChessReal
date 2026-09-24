@@ -15,19 +15,36 @@ enum Square {
     SquareCount                       // 64
 };
 
-uint64_t h_file = 0x8080808080808080;
-uint64_t not_h_file = ~h_file;
-    
-uint64_t g_file = 0x4040404040404040;
-uint64_t not_g_file = ~g_file;
+enum Colour {
+    White,
+    Black,
+    ColourCount
+};
 
-uint64_t a_file = 0x0101010101010101;
-uint64_t not_a_file = ~a_file;
+namespace Masks {
+    constexpr uint64_t h_file = 0x8080808080808080ULL;
+    constexpr uint64_t not_h_file = ~h_file;
+        
+    constexpr uint64_t g_file = 0x4040404040404040ULL;
+    constexpr uint64_t not_g_file = ~g_file;
 
-uint64_t b_file = 0x0202020202020202;
-uint64_t not_b_file = ~b_file;
+    constexpr uint64_t a_file = 0x0101010101010101ULL;
+    constexpr uint64_t not_a_file = ~a_file;
+
+    constexpr uint64_t b_file = 0x0202020202020202ULL;
+    constexpr uint64_t not_b_file = ~b_file;
+
+
+    constexpr uint64_t notGHFile = not_g_file & not_h_file;
+    constexpr uint64_t notABFile = not_a_file & not_b_file; 
+
+    constexpr uint64_t full_board = 0xFFFFFFFFFFFFFFFFULL;
+
+}
 
 inline Square makeSquare(int rank, int file) {
+    assert(rank >= 0 && rank < 8);
+    assert(file >= 0 && file < 8);
     return static_cast<Square>(rank * 8 + file);
 }
 
