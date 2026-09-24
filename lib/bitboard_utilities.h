@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <iostream>
+#include <cassert>
 
 enum Square {
     a1, b1, c1, d1, e1, f1, g1, h1,   //  0 -  7
@@ -13,6 +14,90 @@ enum Square {
     a8, b8, c8, d8, e8, f8, g8, h8,   // 56 - 63
     SquareCount                       // 64
 };
+
+uint64_t h_file = 0x8080808080808080;
+uint64_t not_h_file = ~h_file;
+    
+uint64_t g_file = 0x4040404040404040;
+uint64_t not_g_file = ~g_file;
+
+uint64_t a_file = 0x0101010101010101;
+uint64_t not_a_file = ~a_file;
+
+uint64_t b_file = 0x0202020202020202;
+uint64_t not_b_file = ~b_file;
+
+inline Square makeSquare(int rank, int file) {
+    return static_cast<Square>(rank * 8 + file);
+}
+
+inline int rankOf(Square sq) {
+    return sq / 8;
+}
+
+inline int fileOf(Square sq) {
+    return sq % 8;
+}
+
+
+inline uint64_t setSquare(uint64_t bitboard, Square sq)
+{
+    assert(sq >= 0 && sq < 64);
+    return bitboard | (1ULL << sq);
+}
+
+inline uint64_t clearSquare(uint64_t bitboard, Square sq)
+{
+    assert(sq >= 0 && sq < 64);
+    return bitboard & ~(1ULL << sq);
+}
+
+inline bool testSquare(uint64_t bitboard, Square sq)
+{
+    assert(sq >= 0 && sq < 64);
+    return bitboard & (1ULL << sq);
+}
+
+inline int population_count(uint64_t bitboard){
+
+    int result = 0;
+    for(int i = 0; i < SquareCount; ++i)
+    {
+        if (testSquare(bitboard, static_cast<Square>(i)))
+            result ++;
+    }
+
+    return result;
+}
+
+inline Square lowestBit(uint64_t bitboard)
+{
+    assert(bitboard != 0);
+
+    for (int i = 0; i < SquareCount; ++i)
+    {
+        if (testSquare(bitboard, static_cast<Square>(i)))
+            return static_cast<Square>(i);
+    }
+
+    return SquareCount; // unreachable if the assert holds
+}
+
+inline Square poplowestBit(uint64_t& bitboard)
+{
+    assert(bitboard != 0);
+
+    for (int i = 0; i < SquareCount; ++i)
+    {
+        if (testSquare(bitboard, static_cast<Square>(i))){
+            bitboard = clearSquare(bitboard, static_cast<Square>(i));
+            return static_cast<Square>(i);
+        }
+            
+    }
+
+    return SquareCount; // unreachable if the assert holds
+}
 
 inline void printBitboard(uint64_t bitboard)
 {
@@ -35,3 +120,6 @@ inline void printBitboard(uint64_t bitboard)
 
     std::cout << "\n\n\n";
 }
+
+
+
