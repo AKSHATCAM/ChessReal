@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <cstdint>
+#include <sstream>
+#include <string>
+#include <cctype>
 #include "bitboard_utilities.h"
 
 

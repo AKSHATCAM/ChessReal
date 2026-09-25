@@ -100,6 +100,22 @@ inline Square lowestBit(uint64_t bitboard)
     return SquareCount; // unreachable if the assert holds
 }
 
+inline Square highestBit(uint64_t bitboard)
+{
+    assert(bitboard != 0);
+    Square current_square = a1;
+
+    for (int i = 0; i < SquareCount; ++i)
+    {
+        if (testSquare(bitboard, static_cast<Square>(i)))
+            current_square = static_cast<Square>(i);
+    }
+
+    return current_square;
+}
+
+
+
 inline Square poplowestBit(uint64_t& bitboard)
 {
     assert(bitboard != 0);
