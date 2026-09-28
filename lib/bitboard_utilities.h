@@ -21,26 +21,6 @@ enum Colour {
     ColourCount
 };
 
-namespace Masks {
-    constexpr uint64_t h_file = 0x8080808080808080ULL;
-    constexpr uint64_t not_h_file = ~h_file;
-        
-    constexpr uint64_t g_file = 0x4040404040404040ULL;
-    constexpr uint64_t not_g_file = ~g_file;
-
-    constexpr uint64_t a_file = 0x0101010101010101ULL;
-    constexpr uint64_t not_a_file = ~a_file;
-
-    constexpr uint64_t b_file = 0x0202020202020202ULL;
-    constexpr uint64_t not_b_file = ~b_file;
-
-
-    constexpr uint64_t notGHFile = not_g_file & not_h_file;
-    constexpr uint64_t notABFile = not_a_file & not_b_file; 
-
-    constexpr uint64_t full_board = 0xFFFFFFFFFFFFFFFFULL;
-
-}
 
 inline Square makeSquare(int rank, int file) {
     assert(rank >= 0 && rank < 8);
@@ -154,5 +134,44 @@ inline void printBitboard(uint64_t bitboard)
     std::cout << "\n\n\n";
 }
 
+inline uint64_t shift(uint64_t b, int amount)
+{
+    return amount > 0 ? (b << amount) : (b >> -amount);
+}
 
 
+
+namespace Masks {
+    constexpr uint64_t h_file = 0x8080808080808080ULL;
+    constexpr uint64_t not_h_file = ~h_file;
+        
+    constexpr uint64_t g_file = 0x4040404040404040ULL;
+    constexpr uint64_t not_g_file = ~g_file;
+
+    constexpr uint64_t a_file = 0x0101010101010101ULL;
+    constexpr uint64_t not_a_file = ~a_file;
+
+    constexpr uint64_t b_file = 0x0202020202020202ULL;
+    constexpr uint64_t not_b_file = ~b_file;
+
+
+    constexpr uint64_t notGHFile = not_g_file & not_h_file;
+    constexpr uint64_t notABFile = not_a_file & not_b_file; 
+
+    constexpr uint64_t full_board = 0xFFFFFFFFFFFFFFFFULL;
+
+    constexpr uint64_t rank_1 =     0x00000000000000FFULL;
+    constexpr uint64_t rank_2 = 0x000000000000FF00ULL;
+    constexpr uint64_t rank_8 = 0xFF00000000000000ULL;
+    constexpr uint64_t rank_7 = 0x00FF000000000000ULL;
+    constexpr uint64_t rank_3 = 0x0000000000FF0000ULL;
+    constexpr uint64_t rank_6 = 0x0000FF0000000000ULL;
+
+    //castling masks
+
+    const uint64_t white_kingside_mask = setSquare(0, f1) | setSquare(0, g1);
+    const uint64_t black_kingside_mask = setSquare(0, f8) | setSquare(0, g8);
+    const uint64_t white_queenside_mask = setSquare(0, d1) | setSquare(0, c1) | setSquare(0, b1) ;
+    const uint64_t black_queenside_mask = setSquare(0, d8) | setSquare(0, c8) | setSquare(0, b8) ;
+
+};

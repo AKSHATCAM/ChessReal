@@ -11,7 +11,7 @@
 class Position{
     public:
 
-    enum PieceType {Pawn, Knight, Bishop, Rook, Queen, King, PieceCount};
+    enum PieceType{Pawn, Knight, Bishop, Rook, Queen, King, PieceCount};
 
     uint64_t main_bitboard[ColourCount][PieceType::PieceCount]{};
 
