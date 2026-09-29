@@ -382,3 +382,128 @@ inline void generate_moves_total(MoveList& list, const Position& current_positio
     castling_generator(list, current_position);
 
 }
+
+
+inline MoveList sanity_check(const MoveList& list, const Position& pos)
+{
+    MoveList bad_moves;
+
+    // ---- Setup ----
+    Colour side  = pos.side_to_move;
+    Colour enemy = (side == White) ? Black : White;
+
+    uint64_t own          = pos.occupancyarray[side];
+    uint64_t enemy_pieces = pos.occupancyarray[enemy];
+    uint64_t occupied     = pos.all_occupied_squares;
+    uint64_t last_rank    = (side == White) ? Masks::rank_8 : Masks::rank_1;
+    Square   king_start   = (side == White) ? e1 : e8;
+
+
+    // ---- 1. Duplicates (seen table) ----
+    constexpr int table_length = 64 * 64 * 5;
+    bool table[table_length]{};
+
+    for (int i = 0; i < list.count; ++i)
+    {
+        const Move& move = list.move_array[i];
+
+        int promotion_index = is_promotion(move) ? promotion_of(move) : 0;
+        int key = (from_square(move) * 64 + to_square(move)) * 5 + promotion_index;
+
+        if (table[key])
+        {
+            std::cout << "duplicate: ";
+            print_move(move);
+            std::cout << "\n";
+            move_adder(move, bad_moves);
+        }
+        else
+        {
+            table[key] = true;
+        }
+    }
+
+
+    // ---- 2. Per-move checks ----
+    for (int i = 0; i < list.count; ++i)
+    {
+        const Move& move = list.move_array[i];
+
+        Square from = from_square(move);
+        Square to   = to_square(move);
+        Position::PieceOnSquare mover = pos.pieceAt(from);
+
+        bool ok = true;
+
+        // Starts on one of our own pieces
+        if (!testSquare(own, from))
+        {
+            std::cout << "doesn't start on own piece: ";
+            ok = false;
+        }
+
+        // Doesn't land on one of our own pieces
+        if (testSquare(own, to))
+        {
+            std::cout << "lands on own piece: ";
+            ok = false;
+        }
+
+        // Capture flag is consistent
+        if (is_en_passant(move))
+        {
+            if (!testSquare(pos.enpassant_bitboard, to))
+            {
+                std::cout << "en passant not onto en passant square: ";
+                ok = false;
+            }
+        }
+        else if (is_capture(move))
+        {
+            if (!testSquare(enemy_pieces, to))
+            {
+                std::cout << "capture doesn't land on enemy piece: ";
+                ok = false;
+            }
+        }
+        else
+        {
+            if (testSquare(occupied, to))
+            {
+                std::cout << "non-capture lands on occupied square: ";
+                ok = false;
+            }
+        }
+
+        // Promotions: made by pawns, landing on the last rank
+        if (is_promotion(move))
+        {
+            if (mover.type != Position::Pawn)
+            {
+                std::cout << "promotion not made by a pawn: ";
+                ok = false;
+            }
+            if (!testSquare(last_rank, to))
+            {
+                std::cout << "promotion not onto last rank: ";
+                ok = false;
+            }
+        }
+
+        // Castling starts on e1 (white) or e8 (black)
+        if (is_castling(move) && from != king_start)
+        {
+            std::cout << "castling not from king's starting square: ";
+            ok = false;
+        }
+
+        if (!ok)
+        {
+            print_move(move);
+            std::cout << "\n";
+            move_adder(move, bad_moves);
+        }
+    }
+
+    return bad_moves;
+}
