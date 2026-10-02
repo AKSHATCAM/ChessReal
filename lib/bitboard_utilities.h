@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include <cstdint>
 #include <iostream>
 #include <cassert>
@@ -55,43 +56,21 @@ inline bool testSquare(uint64_t bitboard, Square sq)
     return bitboard & (1ULL << sq);
 }
 
-inline int population_count(uint64_t bitboard){
-
-    int result = 0;
-    for(int i = 0; i < SquareCount; ++i)
-    {
-        if (testSquare(bitboard, static_cast<Square>(i)))
-            result ++;
-    }
-
-    return result;
+inline int population_count(uint64_t bitboard)
+{
+    return std::popcount(bitboard);
 }
 
 inline Square lowestBit(uint64_t bitboard)
 {
     assert(bitboard != 0);
-
-    for (int i = 0; i < SquareCount; ++i)
-    {
-        if (testSquare(bitboard, static_cast<Square>(i)))
-            return static_cast<Square>(i);
-    }
-
-    return SquareCount; // unreachable if the assert holds
+    return static_cast<Square>(std::countr_zero(bitboard));
 }
 
 inline Square highestBit(uint64_t bitboard)
 {
     assert(bitboard != 0);
-    Square current_square = a1;
-
-    for (int i = 0; i < SquareCount; ++i)
-    {
-        if (testSquare(bitboard, static_cast<Square>(i)))
-            current_square = static_cast<Square>(i);
-    }
-
-    return current_square;
+    return static_cast<Square>(63 - std::countl_zero(bitboard));
 }
 
 
@@ -99,17 +78,9 @@ inline Square highestBit(uint64_t bitboard)
 inline Square poplowestBit(uint64_t& bitboard)
 {
     assert(bitboard != 0);
-
-    for (int i = 0; i < SquareCount; ++i)
-    {
-        if (testSquare(bitboard, static_cast<Square>(i))){
-            bitboard = clearSquare(bitboard, static_cast<Square>(i));
-            return static_cast<Square>(i);
-        }
-            
-    }
-
-    return SquareCount; // unreachable if the assert holds
+    Square sq = static_cast<Square>(std::countr_zero(bitboard));
+    bitboard &= bitboard - 1; // clears the lowest set bit
+    return sq;
 }
 
 inline void printBitboard(uint64_t bitboard)

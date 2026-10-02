@@ -6,7 +6,10 @@
             "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
-                "-g",
+                "-O2",
+                "-DNDEBUG",
+                "-march=native",
+                "-std=c++20",
                 "-x",
                 "c++",
                 "${file}",

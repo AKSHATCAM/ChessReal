@@ -23,6 +23,9 @@ class Position{
 
     uint64_t enpassant_bitboard = 0 ; //stores the one square where the capture is. Always on rank 3 or 6. 
 
+    int halfmove_clock = 0;    // moves since the last pawn move or capture (for the 50-move rule)
+    int fullmove_number = 1;   // starts at 1, increases after each black move
+
     uint64_t occupancyarray[ColourCount]{};
 
     uint64_t all_occupied_squares = 0;
@@ -51,6 +54,8 @@ class Position{
         all_occupied_squares = 0;
         enpassant_bitboard = 0;
         side_to_move = White;
+        halfmove_clock = 0;
+        fullmove_number = 1;
 
         for(int i = 0; i < ColourCount; ++i)
         {   
@@ -139,7 +144,8 @@ inline void printBoard(const Position& pos)
         std::cout << static_cast<char>('a' + fileOf(ep))
                   << static_cast<char>('1' + rankOf(ep));
     }
-    std::cout << "\n\n\n";
+    std::cout << "\nHalfmove clock: " << pos.halfmove_clock << "\n";
+    std::cout << "Fullmove number: " << pos.fullmove_number << "\n\n\n";
 }
 
 inline bool fen_parser(Position& pos, const std::string& fen)
@@ -254,7 +260,10 @@ inline bool fen_parser(Position& pos, const std::string& fen)
         pos.enpassant_bitboard = setSquare(0, makeSquare(epRank, epFile));
     }
 
-    // Fields 5 and 6 (clocks) are ignored for now.
+    // Fields 5 and 6 are optional: keep the defaults if they're missing.
+    int half = 0, full = 1;
+    if (stream >> half) pos.halfmove_clock = half;
+    if (stream >> full) pos.fullmove_number = full;
 
     pos.derived_bitboard();   // rebuild occupancy from the finished piece boards
     return true;
