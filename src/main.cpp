@@ -1,100 +1,79 @@
 #include <iostream>
-#include <iomanip>
 #include <string>
-#include <vector>
-#include <chrono>
-#include "../lib/bitboard_utilities.h"
-#include "../lib/attacks.h"
-#include "../lib/position.h"
-#include "../lib/movegen.h"
-#include "../lib/makemove.h"
-#include "../lib/perft.h"
+#include "../lib/game.h"
 
 using namespace std;
 
-int failures = 0;
-
-// Column widths
-const int W_DEPTH = 7, W_EXPECT = 12, W_GOT = 12, W_TIME = 12, W_STATUS = 8;
-
-void printLine()
+// Converts "e2" style text to a square. Returns false if invalid.
+bool parseSquare(char file, char rank, Square& sq)
 {
-    cout << "+" << string(W_DEPTH + 2, '-')
-         << "+" << string(W_EXPECT + 2, '-')
-         << "+" << string(W_GOT + 2, '-')
-         << "+" << string(W_TIME + 2, '-')
-         << "+" << string(W_STATUS + 2, '-') << "+\n";
-}
-
-// Prints the position, then a table with one row per depth.
-// expected[0] is the count for depth 1, expected[1] for depth 2, and so on.
-void runPosition(const string& name, const string& fen, const vector<uint64_t>& expected)
-{
-    Position pos;
-    fen_parser(pos, fen);
-
-    cout << "\n\n==================================================\n";
-    cout << name << "\n";
-    cout << "==================================================";
-    printBoard(pos);
-
-    // Table header
-    printLine();
-    cout << "| " << right << setw(W_DEPTH)  << "Depth"
-         << " | " << setw(W_EXPECT) << "Expected"
-         << " | " << setw(W_GOT)    << "My code"
-         << " | " << setw(W_TIME)   << "Time (ms)"
-         << " | " << left  << setw(W_STATUS) << "Status"
-         << " |\n";
-    printLine();
-
-    // One row per depth
-    for (size_t i = 0; i < expected.size(); ++i)
-    {
-        int depth = static_cast<int>(i) + 1;
-
-        auto start = chrono::steady_clock::now();
-        uint64_t result = perft(pos, depth);
-        auto end = chrono::steady_clock::now();
-
-        double ms = chrono::duration<double, milli>(end - start).count();
-
-        bool pass = (result == expected[i]);
-        if (!pass) failures++;
-
-        cout << "| " << right << setw(W_DEPTH)  << depth
-             << " | " << setw(W_EXPECT) << expected[i]
-             << " | " << setw(W_GOT)    << result
-             << " | " << setw(W_TIME)   << fixed << setprecision(2) << ms
-             << " | " << left  << setw(W_STATUS) << (pass ? "PASS" : "FAIL")
-             << " |\n";
-    }
-
-    printLine();
+    if (file < 'a' || file > 'h' || rank < '1' || rank > '8')
+        return false;
+    sq = makeSquare(rank - '1', file - 'a');
+    return true;
 }
 
 int main()
 {
     initialize_attack_tables();
 
-    runPosition("Starting position",
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            { 20, 400, 8902, 197281, 4865609, 119060324 });
-    
-    runPosition("Position 5",
-        "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
-            { 44, 1486, 62379, 2103487, 89941194 });
+    Game game;
+    game.new_game();
 
-    cout << "\n" << (failures == 0 ? "ALL PERFT TESTS PASSED" : "SOME PERFT TESTS FAILED")
-         << " (" << failures << " failures)\n";
+    while (true)
+    {
+        printBoard(game.position());
 
-    // ---- Divide, for debugging ----
-    // If a row fails, uncomment a line below and compare with Stockfish:
-    //     position fen <fen>
-    //     go perft <depth>
-    //
-    // Position dbg;
-    // fen_parser(dbg, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    // divide(dbg, 3);
+        // ---- Game over? ----
+        GameStatus status = game.status();
+        if (status == Checkmate)
+        {
+            cout << "Checkmate! " << (game.side_to_move() == White ? "Black" : "White") << " wins.\n";
+            break;
+        }
+        if (status == Stalemate)     { cout << "Stalemate. Draw.\n"; break; }
+        if (status == FiftyMoveDraw) { cout << "Draw by the 50-move rule.\n"; break; }
+
+        if (in_check(game.position()))
+            cout << "Check!\n";
+
+        // ---- Read a move, re-prompting until it's legal ----
+        while (true)
+        {
+            cout << (game.side_to_move() == White ? "White" : "Black")
+                 << " to move (e.g. e2e4, e7e8q, or quit): ";
+
+            string input;
+            cin >> input;
+
+            if (input == "quit")
+                return 0;
+
+            Square from, to;
+            Position::PieceType promotion = Position::PieceCount;
+
+            bool valid = (input.size() == 4 || input.size() == 5)
+                      && parseSquare(input[0], input[1], from)
+                      && parseSquare(input[2], input[3], to);
+
+            if (valid && input.size() == 5)
+            {
+                switch (input[4])
+                {
+                    case 'q': promotion = Position::Queen;  break;
+                    case 'r': promotion = Position::Rook;   break;
+                    case 'b': promotion = Position::Bishop; break;
+                    case 'n': promotion = Position::Knight; break;
+                    default:  valid = false;
+                }
+            }
+
+            if (valid && game.try_move(from, to, promotion))
+                break;   // legal move made
+
+            cout << "Illegal move, try again.\n";
+        }
+    }
+
+    return 0;
 }
-

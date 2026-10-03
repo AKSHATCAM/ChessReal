@@ -27,6 +27,10 @@ struct Move {
     
 };
 
+constexpr Position::PieceType promotion_pieces[] = {
+        Position::Queen, Position::Rook, Position::Bishop, Position::Knight
+};
+
 
 // ---- Accessors: the rest of the engine uses these, never the fields directly ----
 
@@ -94,9 +98,7 @@ inline void move_adder(Move move_to_add, MoveList& list)
 // it is added four times, once for each promotion piece.
 inline void add_pawn_move(Move move_to_add, uint64_t promotion_rank, MoveList& list, uint8_t flag)
 {
-    constexpr Position::PieceType promotion_pieces[] = {
-        Position::Queen, Position::Rook, Position::Bishop, Position::Knight
-    };
+
 
     move_to_add.move_flags = flag;
 
