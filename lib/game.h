@@ -107,6 +107,23 @@ public:
         return current_position;
     }
 
+    bool isSquareonSidetoMove(Square sq) const
+    {
+        return current_position.pieceAt(sq).colour == current_position.side_to_move;
+    }
+
+    uint64_t legal_for_square(Square sq) const
+    {
+        uint64_t targets = 0;
+        for (int i = 0; i < current_legal_moves.count; i++)
+        {
+            const Move& move = current_legal_moves.move_array[i];
+            if (move.from == sq)
+                targets = setSquare(targets, move.to);
+        }
+        return targets;
+    }
+
 private:
     Position current_position{};
     MoveList current_legal_moves{};
