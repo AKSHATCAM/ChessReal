@@ -124,6 +124,17 @@ public:
         return targets;
     }
 
+    bool is_legal_promotion(Square from, Square to) const
+    {
+        for (int i = 0; i < current_legal_moves.count; i++)
+        {
+            const Move& move = current_legal_moves.move_array[i];
+            if (move.from == from && move.to == to && is_promotion(move))
+                return true;
+        }
+        return false;
+    }
+
 private:
     Position current_position{};
     MoveList current_legal_moves{};

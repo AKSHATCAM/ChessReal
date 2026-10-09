@@ -186,7 +186,7 @@ inline bool fen_parser(Position& pos, const std::string& fen)
             count += empty;
             rank_count += empty;
 
-            if (rank_count > 8)
+            if (rank_count >= 8 || count >= 64)
                 return false;   // too many squares in this rank
             continue;
         }
@@ -264,8 +264,11 @@ inline bool fen_parser(Position& pos, const std::string& fen)
     int half = 0, full = 1;
     if (stream >> half) pos.halfmove_clock = half;
     if (stream >> full) pos.fullmove_number = full;
-
+    if (population_count(pos.main_bitboard[White][Position::King]) != 1 || population_count(pos.main_bitboard[Black][Position::King]) != 1)
+        return false;
     pos.derived_bitboard();   // rebuild occupancy from the finished piece boards
+
+
     return true;
 }
 
