@@ -186,7 +186,8 @@ inline bool fen_parser(Position& pos, const std::string& fen)
             count += empty;
             rank_count += empty;
 
-            if (rank_count >= 8 || count >= 64)
+            // Skipping squares may land EXACTLY on the end of a rank: only overshooting is wrong
+            if (rank_count > 8)
                 return false;   // too many squares in this rank
             continue;
         }
@@ -197,8 +198,9 @@ inline bool fen_parser(Position& pos, const std::string& fen)
         if (index == std::string::npos)
             return false;   // unknown character
 
-        if (rank_count >= 8)
-            return false;   // a piece would be a 9th square in this rank
+        // A piece needs a free square: none left in this rank, or on the board
+        if (rank_count >= 8 || count >= 64)
+            return false;   // a 9th square in this rank, or a 9th rank
 
         Position::PieceType current_piece = static_cast<Position::PieceType>(index);
 
@@ -222,6 +224,12 @@ inline bool fen_parser(Position& pos, const std::string& fen)
     // The last rank has no '/' after it, so check it here,
     // then check the whole board covers exactly 64 squares (8 ranks of 8).
     if (rank_count != 8 || count != 64)
+        return false;
+
+    // Exactly one king per side, otherwise in_check / the search would
+    // call lowestBit on an empty bitboard
+    if (population_count(pos.main_bitboard[White][Position::King]) != 1 ||
+        population_count(pos.main_bitboard[Black][Position::King]) != 1)
         return false;
 
     // ---- Field 2: side to move ----
@@ -264,11 +272,8 @@ inline bool fen_parser(Position& pos, const std::string& fen)
     int half = 0, full = 1;
     if (stream >> half) pos.halfmove_clock = half;
     if (stream >> full) pos.fullmove_number = full;
-    if (population_count(pos.main_bitboard[White][Position::King]) != 1 || population_count(pos.main_bitboard[Black][Position::King]) != 1)
-        return false;
+
     pos.derived_bitboard();   // rebuild occupancy from the finished piece boards
-
-
     return true;
 }
 
